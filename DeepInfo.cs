@@ -6,7 +6,8 @@ using System.Text.RegularExpressions;
 
 namespace PcCheck;
 
-/// <summary>深度参数采集（CPU-Z/GPU-Z 主要字段：步进/电压/TDP/缓存/内存SMBIOS/显卡频率/芯片组/参考基准）——全内置。</summary>
+/// <summary>深度参数采集（CPU-Z/GPU-Z 主要字段：步进/电压/TDP/缓存/内存/显卡频率/DirectX/芯片组/参考基准）——全内置。
+/// 电压/GPU 频率等传感器数据由调用方传入（全局共享单个 HardwareSensors 实例，避免 LHM 双实例冲突）。</summary>
 public static class DeepInfo
 {
     // IsProcessorFeaturePresent 常量（winnt.h）
@@ -16,19 +17,12 @@ public static class DeepInfo
     [DllImport("kernel32.dll")]
     static extern bool IsProcessorFeaturePresent(int feature);
 
-    public static string Build()
+    public static string Build(LiveData live)
     {
         var sb = new StringBuilder();
         sb.AppendLine("════════ 深度参数 ════════");
         sb.AppendLine($"采集时间：{DateTime.Now:yyyy-MM-dd HH:mm}");
         sb.AppendLine();
-
-        // 传感器（CPU 电压 / GPU 频率）——需管理员，manifest 已申请
-        var live = new LiveData { SensorsOk = false };
-        using (var hs = new HardwareSensors())
-        {
-            if (hs.SensorsAvailable) live = hs.Collect();
-        }
 
         // ---------- 处理器 ----------
         string cpuName = "", socket = "";

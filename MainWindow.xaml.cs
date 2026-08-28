@@ -198,7 +198,9 @@ public partial class MainWindow : Window
     void RefreshDeep()
     {
         deepStatus.Text = "采集中…";
-        _lastDeep = DeepInfo.Build();
+        // 复用主窗唯一的 HardwareSensors 实例采集（不能新建第二个：LHM 双实例会破坏 WinRing0 驱动状态导致数据冻结）
+        var live = _sensors.Collect();
+        _lastDeep = DeepInfo.Build(live);
         deepText.Text = _lastDeep;
         deepStatus.Text = "深度参数采集完成 ✓";
         LogService.Append("深度参数已刷新");
