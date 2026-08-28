@@ -49,4 +49,20 @@ public static class GpuSpecs
             if (gpuName.Contains(key, StringComparison.OrdinalIgnoreCase)) return spec;
         return "内置规格库未收录此型号（可在开源仓库提交型号数据）";
     }
+
+    /// <summary>按显卡名推断 DirectX 支持级别（参考）。</summary>
+    public static string GetDx(string gpuName)
+    {
+        if (gpuName.Contains("RX 6") || gpuName.Contains("RX 7") || gpuName.Contains("RX 9"))
+            return "DirectX 12 Ultimate";
+        if (gpuName.Contains("RX") || gpuName.Contains("Radeon") || gpuName.Contains("Vega"))
+            return "DirectX 12 (12_0)";
+        if (gpuName.Contains("RTX"))
+            return "DirectX 12 Ultimate";
+        if (gpuName.Contains("GTX") || gpuName.Contains("GT"))
+            return "DirectX 12 (12_1)";
+        if (gpuName.Contains("Intel") || gpuName.Contains("UHD") || gpuName.Contains("Iris"))
+            return "DirectX 12";
+        return "?";
+    }
 }

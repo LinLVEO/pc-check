@@ -9,7 +9,9 @@ public class LiveData
 {
     public bool SensorsOk;                       // 传感器是否可用（需管理员权限）
     public float? CpuTemp, CpuLoad, CpuClock, CpuPower;   // 温度已含校准偏移
+    public float? CpuVcore;                      // CPU 核心电压（V）
     public float? GpuTemp, GpuLoad, GpuMemUsedMb, GpuMemTotalMb, GpuPower;
+    public float? GpuCoreClock, GpuMemClock;     // GPU 核心/显存频率（MHz）
     public float? RamUsedGb, RamTotalGb;
     public float? FanRpm;
 }
@@ -70,6 +72,8 @@ public sealed class HardwareSensors : IDisposable
                                 d.CpuClock = Max(d.CpuClock, s.Value);
                             else if (s.SensorType == SensorType.Power && s.Name.Contains("Package"))
                                 d.CpuPower = s.Value;
+                            else if (s.SensorType == SensorType.Voltage && (s.Name.Contains("Vcore") || s.Name.Contains("VCore") || s.Name.Contains("Core Voltage") || s.Name.Contains("CPU Core")))
+                                d.CpuVcore = Max(d.CpuVcore, s.Value);
                             break;
 
                         case HardwareType.GpuAmd:
@@ -85,6 +89,11 @@ public sealed class HardwareSensors : IDisposable
                                 d.GpuMemTotalMb = Max(d.GpuMemTotalMb, s.Value);
                             else if (s.SensorType == SensorType.Power)
                                 d.GpuPower = Max(d.GpuPower, s.Value);
+                            else if (s.SensorType == SensorType.Clock)
+                            {
+                                if (s.Name.Contains("Core")) d.GpuCoreClock = Max(d.GpuCoreClock, s.Value);
+                                else if (s.Name.Contains("Memory")) d.GpuMemClock = Max(d.GpuMemClock, s.Value);
+                            }
                             break;
 
                         case HardwareType.Motherboard:

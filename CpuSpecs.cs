@@ -119,4 +119,56 @@ public static class CpuSpecs
         if (name.Contains("Pentium") || name.Contains("Celeron")) return ("入门级", "14 nm 或更新");
         return ("型号库未收录", "?");
     }
+
+    /// <summary>按型号推断 TDP（瓦，参考值），未收录返回 "?"。</summary>
+    public static string Tdp(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        // Xeon E5 v1/v2 常见型号（双路 2600 系列为主）
+        if (name.Contains("Xeon") && Regex.IsMatch(name, @"E5-\d{4}"))
+        {
+            var m = Regex.Match(name, @"E5-(\d{4})");
+            if (m.Success)
+            {
+                int v = int.Parse(m.Groups[1].Value);
+                if (v >= 1600 && v < 1700) return "130 W";
+                if (v >= 2600 && v < 2700)
+                {
+                    return v switch
+                    {
+                        2680 => "130 W", 2690 => "135 W", 2687 => "150 W", 2670 => "115 W",
+                        2665 => "115 W", 2660 => "95 W", 2650 => "95 W", 2658 => "95 W",
+                        2640 => "95 W", 2630 => "95 W", 2620 => "95 W", 2609 => "80 W",
+                        2603 => "80 W", _ => v % 100 >= 80 ? "130~150 W" : v % 100 >= 60 ? "95~115 W" : "80~95 W"
+                    };
+                }
+                if (v >= 4600 && v < 4700) return "130 W";
+                return "?";
+            }
+        }
+        // Intel 桌面 i3/i5/i7（按代数+后缀粗估）
+        var m2 = Regex.Match(name, @"i[357]-(\d{4})");
+        if (m2.Success)
+        {
+            string g = m2.Groups[1].Value;
+            int lastTwo = int.Parse(g.Substring(2, 2));
+            char gen = g[0];
+            if (gen == '1') return lastTwo >= 90 ? "125 W" : lastTwo >= 60 ? "65 W" : "35 W";
+            if (gen == '0') return lastTwo >= 90 ? "125 W" : "65 W";
+            if (gen == '9' || gen == '8') return lastTwo >= 90 ? "95 W" : lastTwo >= 60 ? "65 W" : "35 W";
+            if (gen == '7' || gen == '6') return lastTwo >= 90 ? "91 W" : lastTwo >= 60 ? "65 W" : "35 W";
+            if (gen == '4' || gen == '5') return lastTwo >= 90 ? "88 W" : lastTwo >= 60 ? "84 W" : "35 W";
+            if (gen == '3' || gen == '2') return lastTwo >= 90 ? "77 W" : lastTwo >= 60 ? "65 W" : "35 W";
+        }
+        var rm = Regex.Match(name, @"Ryzen\s*(\d)");
+        if (rm.Success)
+        {
+            return rm.Groups[1].Value switch
+            {
+                "9" => "170 W", "7" => "105 W", "5" => "65 W", "3" => "65 W", _ => "?"
+            };
+        }
+        if (name.Contains("Pentium") || name.Contains("Celeron")) return "35~65 W";
+        return "?";
+    }
 }

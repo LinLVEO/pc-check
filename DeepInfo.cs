@@ -1,10 +1,12 @@
+using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PcCheck;
 
-/// <summary>深度参数采集（全缓存实测、代号工艺推断、内存条、显卡规格库、驱动、主板/BIOS）——全内置。</summary>
+/// <summary>深度参数采集（CPU-Z/GPU-Z 主要字段：步进/电压/TDP/缓存/内存SMBIOS/显卡频率/芯片组/参考基准）——全内置。</summary>
 public static class DeepInfo
 {
     // IsProcessorFeaturePresent 常量（winnt.h）
@@ -21,12 +23,18 @@ public static class DeepInfo
         sb.AppendLine($"采集时间：{DateTime.Now:yyyy-MM-dd HH:mm}");
         sb.AppendLine();
 
+        // 传感器（CPU 电压 / GPU 频率）——需管理员，manifest 已申请
+        var live = new LiveData { SensorsOk = false };
+        using (var hs = new HardwareSensors())
+        {
+            if (hs.SensorsAvailable) live = hs.Collect();
+        }
+
         // ---------- 处理器 ----------
-        string cpuName = "";
-        int cores = 0, threads = 0;
-        double maxGhz = 0;
+        string cpuName = "", socket = "";
+        int cores = 0, threads = 0, rev = 0;
+        double maxGhz = 0, curGhz = 0;
         long extClock = 0;
-        string socket = "";
         try
         {
             using var mos = new ManagementObjectSearcher("SELECT * FROM Win32_Processor");
@@ -36,7 +44,9 @@ public static class DeepInfo
                 cores = Convert.ToInt32(o["NumberOfCores"]);
                 threads = Convert.ToInt32(o["NumberOfLogicalProcessors"]);
                 if (o["MaxClockSpeed"] != null) maxGhz = Math.Round(Convert.ToDouble(o["MaxClockSpeed"]) / 1000.0, 2);
+                if (o["CurrentClockSpeed"] != null) curGhz = Math.Round(Convert.ToDouble(o["CurrentClockSpeed"]) / 1000.0, 2);
                 long.TryParse(o["ExtClock"]?.ToString(), out extClock);
+                int.TryParse(o["Revision"]?.ToString(), out rev);
                 socket = o["SocketDesignation"]?.ToString()?.Trim() ?? "";
                 break;
             }
@@ -47,9 +57,17 @@ public static class DeepInfo
         sb.AppendLine($"  型号：{cpuName}");
         sb.AppendLine($"  核心 / 线程：{cores} 核 / {threads} 线程");
         if (maxGhz > 0)
-            sb.AppendLine($"  主频：{maxGhz:0.00} GHz" + (extClock > 0 ? $"（外频 {extClock} MHz × 倍频 {Math.Round(maxGhz * 1000 / extClock):0}）" : ""));
+            sb.AppendLine($"  标称主频：{maxGhz:0.00} GHz" + (extClock > 0 ? $"（外频 {extClock} MHz × 倍频 {Math.Round(maxGhz * 1000 / extClock):0}）" : ""));
+        if (curGhz > 0)
+            sb.AppendLine($"  当前频率：{curGhz:0.00} GHz" + (Math.Abs(curGhz - maxGhz) > 0.01 ? "（传感器实时）" : ""));
         var (code, proc) = CpuSpecs.Infer(cpuName);
         sb.AppendLine($"  代号 / 工艺：{code} · {proc}（按型号推断）");
+        if (rev > 0)
+            sb.AppendLine($"  步进 / 修订：Model {(rev >> 8) & 0xFF} / Stepping {rev & 0xFF}（修订号 0x{rev:X4}）");
+        if (live.CpuVcore.HasValue)
+            sb.AppendLine($"  核心电压：{live.CpuVcore.Value:0.000} V（传感器实测）");
+        string tdp = CpuSpecs.Tdp(cpuName);
+        if (tdp != "?") sb.AppendLine($"  TDP：{tdp}（参考）");
         sb.AppendLine($"  插槽：{socket}");
 
         var caches = CpuSpecs.ReadCaches();
@@ -103,7 +121,7 @@ public static class DeepInfo
             if (sticks == 0) sb.AppendLine("  未读取到内存条");
         }
         catch { sb.AppendLine("  读取失败"); }
-        sb.AppendLine("  （时序 CL-tRCD-tRP 等需读 SPD，系统接口未开放）");
+        sb.AppendLine("  （时序 CL-tRCD-tRP-tRAS / 电压 / SPD 详参需读 SPD 芯片，Windows 普通接口不开放；CPU-Z/GPU-Z 靠内核驱动直读。本机 BIOS 未提供规范 SMBIOS 内存数据）");
         sb.AppendLine();
 
         // ---------- 显卡 ----------
@@ -127,10 +145,16 @@ public static class DeepInfo
                     drvDate = $"{dh.Substring(0, 4)}-{dh.Substring(4, 2)}-{dh.Substring(6, 2)}";
                 sb.AppendLine($"  型号：{n}");
                 sb.AppendLine($"  规格（内置库）：{GpuSpecs.Lookup(n)}");
+                sb.AppendLine($"  DirectX 支持：{GpuSpecs.GetDx(n)}");
+                if (live.GpuCoreClock.HasValue)
+                    sb.AppendLine($"  当前核心频率：{live.GpuCoreClock.Value:0} MHz（传感器实测）");
+                if (live.GpuMemClock.HasValue)
+                    sb.AppendLine($"  当前显存频率：{live.GpuMemClock.Value:0} MHz（传感器实测）");
                 sb.AppendLine($"  显存：{(ramGb > 0 ? ramGb.ToString("0.0") + " GB（驱动报告值）" : "读取失败")}");
                 sb.AppendLine($"  驱动版本：{o["DriverVersion"] ?? "?"}");
                 sb.AppendLine($"  驱动日期：{drvDate}");
                 sb.AppendLine($"  当前分辨率：{o["CurrentHorizontalResolution"]} × {o["CurrentVerticalResolution"]} @ {o["CurrentRefreshRate"]} Hz");
+                sb.AppendLine($"  显卡 BIOS 版本：驱动未提供（Windows 不向普通应用暴露）");
                 break;
             }
         }
@@ -144,11 +168,14 @@ public static class DeepInfo
             using var mos = new ManagementObjectSearcher("SELECT * FROM Win32_BaseBoard");
             foreach (var o in mos.Get())
             {
-                sb.AppendLine($"  主板：{o["Manufacturer"]?.ToString()?.Trim()} {o["Product"]?.ToString()?.Trim()}".Trim());
+                sb.AppendLine($"  主板：{o["Manufacturer"]?.ToString()?.Trim()} {o["Product"]?.ToString()?.Trim()}".TrimEnd());
                 break;
             }
         }
         catch { sb.AppendLine("  读取失败"); }
+        string chipset = ReadChipset();
+        if (!string.IsNullOrEmpty(chipset))
+            sb.AppendLine($"  芯片组：{chipset}");
         try
         {
             using var mos = new ManagementObjectSearcher("SELECT * FROM Win32_BIOS");
@@ -165,7 +192,73 @@ public static class DeepInfo
         catch { sb.AppendLine("  读取失败"); }
         sb.AppendLine();
 
-        sb.AppendLine("（代号/工艺/显卡规格按型号推断；位宽带宽等为公开规格，供参考）");
+        // ---------- CPU 参考基准 ----------
+        sb.AppendLine("【CPU 参考基准】");
+        var bench = RunBenchmark();
+        sb.AppendLine($"  单核：{bench.single:0} 分（每秒素数筛，参考值）");
+        sb.AppendLine($"  多核：{bench.multi:0} 分（{cores} 核并行，参考值）");
+        sb.AppendLine("  ※ 参考基准为内置算法，非 CPU-Z 分数，仅作同机对比参考");
+        sb.AppendLine();
+
+        sb.AppendLine("（代号/工艺/TDP/显卡规格/DirectX 为按型号推断；频率/电压为传感器实测；内存时序需 SPD，本机 BIOS 未提供规范数据）");
         return sb.ToString();
+    }
+
+    // ================= 芯片组（PnP 推断） =================
+    static string ReadChipset()
+    {
+        try
+        {
+            using var mos = new ManagementObjectSearcher("SELECT Name FROM Win32_PnPEntity");
+            string fallback = "";
+            foreach (var o in mos.Get())
+            {
+                string n = o["Name"]?.ToString() ?? "";
+                if (!n.Contains("Chipset Family") && !n.Contains("Series/C200")) continue;
+                // 截取芯片组家族部分（去掉 USB/SATA 等功能后缀）
+                string fam = n;
+                int cut = n.IndexOf(" Chipset Family", StringComparison.Ordinal);
+                if (cut > 0) fam = n.Substring(0, cut + " Chipset Family".Length);
+                if (fam.Contains("6 Series/C200 Series Chipset Family")) return "Intel C600 系列（X79 平台）";
+                if (string.IsNullOrEmpty(fallback)) fallback = fam;
+            }
+            return fallback;
+        }
+        catch { return "读取失败"; }
+    }
+
+    // ================= CPU 参考基准（内置算法，非 CPU-Z 分数） =================
+    static (double single, double multi) RunBenchmark()
+    {
+        try
+        {
+            double single = Bench(1);
+            double multi = Bench(Environment.ProcessorCount);
+            return (Math.Round(single, 0), Math.Round(multi, 0));
+        }
+        catch { return (0, 0); }
+    }
+
+    static double Bench(int parallel)
+    {
+        const int LIMIT = 300000;
+        var sw = Stopwatch.StartNew();
+        if (parallel <= 1)
+        {
+            for (int i = 2; i < LIMIT; i++) IsPrime(i);
+        }
+        else
+        {
+            Parallel.For(2, LIMIT, new ParallelOptions { MaxDegreeOfParallelism = parallel }, i => IsPrime(i));
+        }
+        sw.Stop();
+        return LIMIT / sw.Elapsed.TotalSeconds;
+    }
+
+    static bool IsPrime(int v)
+    {
+        if (v < 2) return false;
+        for (int d = 2; d * d <= v; d++) if (v % d == 0) return false;
+        return true;
     }
 }
