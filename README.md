@@ -16,9 +16,17 @@
 
 ## 📸 界面预览
 
-| 基础体检 | 实时监控 | 深度参数 |
-|---|---|---|
-| ![基础体检](docs/screenshots/tab-basic.png) | ![实时监控](docs/screenshots/tab-monitor.png) | ![深度参数](docs/screenshots/tab-deep.png) |
+**基础体检**
+
+![基础体检](docs/screenshots/tab-basic.png)
+
+**实时监控**
+
+![实时监控](docs/screenshots/tab-monitor.png)
+
+**深度参数**
+
+![深度参数](docs/screenshots/tab-deep.png)
 
 > 更多说明见 [在线文档站](https://linlveo.github.io/pc-check/)
 
