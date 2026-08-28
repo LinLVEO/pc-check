@@ -1,0 +1,13 @@
+# 构建产物
+bin/
+obj/
+发布/
+
+# IDE / 系统
+.vs/
+*.user
+*.suo
+Thumbs.db
+
+# 本地配置（含截图热键/校准等个人设置）
+config.json
