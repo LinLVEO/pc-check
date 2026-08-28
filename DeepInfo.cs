@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PcCheck;
 
-/// <summary>深度参数采集（CPU-Z/GPU-Z 同级别：全缓存、代号工艺、内存条、显卡规格、驱动、主板/BIOS）——全内置。</summary>
+/// <summary>深度参数采集（全缓存实测、代号工艺推断、内存条、显卡规格库、驱动、主板/BIOS）——全内置。</summary>
 public static class DeepInfo
 {
     // IsProcessorFeaturePresent 常量（winnt.h）

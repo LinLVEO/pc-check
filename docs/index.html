@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小白电脑体检 PC Check — 开源 · 干净 · 无广告</title>
+<meta name="description" content="开源、干净、无广告的一体式 Windows 电脑体检工具：体检 + 实时监控 + 深度参数 + 内置悬浮窗。只读本机信息，不上传任何数据。">
+<style>
+  :root { color-scheme: light; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; background: #f5f6f8; color: #1a1a1a; line-height: 1.7; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+  header { background: linear-gradient(135deg, #2b3a67, #1f5e8c); color: #fff; padding: 56px 0 48px; text-align: center; }
+  header h1 { font-size: 34px; font-weight: 700; letter-spacing: 1px; }
+  header .tag { margin-top: 10px; font-size: 17px; opacity: .92; }
+  header .badges { margin-top: 16px; font-size: 14px; }
+  header .badge { display: inline-block; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 4px 14px; margin: 4px; }
+  .dl { margin-top: 26px; }
+  .dl a { display: inline-block; background: #fff; color: #1f5e8c; font-weight: 700; font-size: 16px; padding: 12px 30px; border-radius: 8px; text-decoration: none; box-shadow: 0 3px 12px rgba(0,0,0,.18); }
+  .dl a:hover { background: #eaf2f8; }
+  .dl .hint { margin-top: 10px; font-size: 13px; opacity: .8; }
+  section { padding: 40px 0; }
+  section:nth-child(even) { background: #fff; }
+  h2 { font-size: 22px; margin-bottom: 18px; color: #1f5e8c; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: #f5f6f8; border: 1px solid #e3e6ec; border-radius: 10px; padding: 18px; }
+  .card h3 { font-size: 16px; margin-bottom: 8px; color: #2b3a67; }
+  .card p { font-size: 14px; color: #444; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .shot { text-align: center; }
+  .shot img { width: 100%; border: 1px solid #dde1e8; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .shot p { margin-top: 8px; font-size: 14px; color: #555; }
+  ul.feats { padding-left: 20px; }
+  ul.feats li { margin-bottom: 8px; font-size: 15px; }
+  .note { background: #fff8e6; border: 1px solid #f0d9a8; border-radius: 10px; padding: 16px 18px; font-size: 14px; color: #5a4a20; }
+  .note b { color: #8a6d1a; }
+  .coop { display: flex; align-items: center; gap: 14px; }
+  .coop .who { font-size: 15px; }
+  code { background: #eef1f5; border-radius: 4px; padding: 2px 6px; font-size: 13px; }
+  footer { background: #2b3a67; color: #c8d2ea; text-align: center; padding: 22px 0; font-size: 13px; }
+  footer a { color: #9fc0e8; text-decoration: none; }
+  a { color: #1f5e8c; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>🖥️ 小白电脑体检</h1>
+    <div class="tag">PC Check — 开源 · 干净 · 无广告 · 一键看懂你的电脑</div>
+    <div class="badges">
+      <span class="badge">⚡ 双击即用</span>
+      <span class="badge">🔒 只读本机信息</span>
+      <span class="badge">🚫 无广告</span>
+      <span class="badge">🆓 完全开源（MIT）</span>
+    </div>
+    <div class="dl">
+      <a href="https://github.com/LinLVEO/pc-check/releases/latest/download/PcCheck-v1.0.0-win-x64.zip">⬇️ 下载 v1.0.0（63.7 MB）</a>
+      <div class="hint">Windows 10/11 · 首次运行请点击“更多信息 → 仍要运行”（未购买商业签名）</div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>✨ 功能</h2>
+    <div class="cards">
+      <div class="card"><h3>🧪 基础体检</h3><p>硬件总览（CPU/内存/显卡/主板/BIOS）+ AVX2 检测 + 磁盘体检 + 健康小结，一键复制/保存报告。</p></div>
+      <div class="card"><h3>📈 实时监控</h3><p>CPU/GPU 温度·占用·频率·功耗、显存、内存、风扇、FPS（RTSS），每 2 秒刷新，温度高自动变红；Xeon E5 v1 自动校准 -11°C。</p></div>
+      <div class="card"><h3>🔬 深度参数</h3><p>CPU/内存/显卡/主板关键规格一屏看全：L1/L2/L3 全缓存实测、代号/工艺按型号推断、外频×倍频、指令集、内存条详情、显卡规格库。</p></div>
+      <div class="card"><h3>🪟 内置悬浮窗</h3><p>无边框置顶小窗：锁定/位置/字号/透明度/温度校准/截图热键/功耗估算/开机自启。</p></div>
+      <div class="card"><h3>📋 体检日志</h3><p>历史体检记录自动保存，清除时自动备份 .bak，不怕误删。</p></div>
+      <div class="card"><h3>🌐 实用官网</h3><p>驱动下载/检测跑分/装机软件/社区 4 组 21 站常用入口，一键直达。</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>📸 界面预览</h2>
+    <div class="shots">
+      <div class="shot"><img src="screenshots/tab-basic.png" alt="基础体检界面"><p>基础体检</p></div>
+      <div class="shot"><img src="screenshots/tab-monitor.png" alt="实时监控界面"><p>实时监控</p></div>
+      <div class="shot"><img src="screenshots/tab-deep.png" alt="深度参数界面"><p>深度参数</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>🛡️ 安全与误报说明</h2>
+    <div class="note">
+      <p><b>需要管理员权限：</b>读取 CPU 温度/功耗需要访问硬件底层（ring0 驱动，来自 LibreHardwareMonitor 库），启动会弹 UAC 确认——属正常现象，不是病毒。</p>
+      <p style="margin-top:8px"><b>杀软误报：</b>WinRing0 系驱动是杀软常见误报对象，Windows Defender 可能报“风险驱动/潜在威胁”——<b>属误报</b>。本工具只读本机传感器，<b>不上传任何数据，无任何网络通信</b>，源码全部公开可审计。</p>
+      <p style="margin-top:8px"><b>SmartScreen：</b>未购买商业签名证书，首次运行可能弹“Windows 已保护你的电脑”，点“更多信息 → 仍要运行”即可。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>🤝 合作开发</h2>
+    <div class="coop">
+      <div class="who">本工具由 <b>_Lin_chan</b> 主创、<b>DeepSeek AI 助手</b> 协作开发——AI 负责编码实现与调试，作者负责方向与验收，共同迭代完成。</div>
+    </div>
+    <p style="margin-top:14px;font-size:14px">源码在 <a href="https://github.com/LinLVEO/pc-check">github.com/LinLVEO/pc-check</a> · 遇到问题欢迎提 <a href="https://github.com/LinLVEO/pc-check/issues">Issue</a> · 使用 <code>dotnet publish PcCheck.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o 发布</code> 自行构建</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    小白电脑体检 PC Check · MIT License · <a href="https://github.com/LinLVEO/pc-check">GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>

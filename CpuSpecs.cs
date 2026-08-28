@@ -65,7 +65,7 @@ public static class CpuSpecs
         return result;
     }
 
-    /// <summary>按型号推断代号与工艺（CPU-Z 同级别显示，标注"按型号推断"）。</summary>
+    /// <summary>按型号推断代号与工艺（标注"按型号推断"）。</summary>
     public static (string CodeName, string Process) Infer(string name)
     {
         if (string.IsNullOrEmpty(name)) return ("型号库未收录", "?");

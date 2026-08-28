@@ -1,6 +1,6 @@
 namespace PcCheck;
 
-/// <summary>显卡规格库：按型号查 GPU 代号/工艺/显存/位宽/带宽/着色器数（CPU-Z/GPU-Z 同级别信息，内置表）。</summary>
+/// <summary>显卡规格库：按型号查 GPU 代号/工艺/显存/位宽/带宽/着色器数（内置公开规格表）。</summary>
 public static class GpuSpecs
 {
     static readonly (string Key, string Spec)[] Table =
