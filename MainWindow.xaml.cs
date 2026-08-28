@@ -106,16 +106,16 @@ public partial class MainWindow : Window
             for (int i = 0; i < _monValues.Length; i++) _monValues[i].Text = "—";
             return;
         }
-        monStatus.Text = "实时监控中 ✓（每 2 秒刷新）";
+        monStatus.Text = $"实时监控中 ✓（每 2 秒刷新 · 上次更新 {DateTime.Now:HH:mm:ss}）";
         monStatus.Foreground = Green;
 
         float? cpuTemp = d.CpuTemp.HasValue ? d.CpuTemp.Value + Calibration.Offset : (float?)null;
-        _monValues[0].Text = F(cpuTemp, "0.0") + " °C";
-        _monValues[1].Text = F(d.CpuLoad, "0") + " %";
+        _monValues[0].Text = F(cpuTemp, "0.00") + " °C";
+        _monValues[1].Text = F(d.CpuLoad, "0.0") + " %";
         _monValues[2].Text = F(d.CpuClock, "0") + " MHz";
-        _monValues[3].Text = F(d.CpuPower, "0") + " W";
-        _monValues[4].Text = F(d.GpuTemp, "0.0") + " °C";
-        _monValues[5].Text = F(d.GpuLoad, "0") + " %";
+        _monValues[3].Text = F(d.CpuPower, "0.0") + " W";
+        _monValues[4].Text = F(d.GpuTemp, "0.00") + " °C";
+        _monValues[5].Text = F(d.GpuLoad, "0.0") + " %";
         _monValues[6].Text = (d.GpuMemUsedMb.HasValue ? (d.GpuMemUsedMb.Value / 1024).ToString("0.0") : "—")
             + " / " + (d.GpuMemTotalMb.HasValue ? (d.GpuMemTotalMb.Value / 1024).ToString("0.0") : "—") + " GB";
         _monValues[7].Text = F(d.GpuPower, "0") + " W";
