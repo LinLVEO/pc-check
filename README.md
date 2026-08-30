@@ -62,5 +62,5 @@ MIT
 
 只要一个置顶监控小窗？独立浮窗版功能更全、更新更快：CPU/GPU 温度·占用·频率·功耗、内存、磁盘占用、网速、FPS/1% low（PresentMon ETW 采集，不依赖 RTSS，来源可自选）、最小化小方框、趋势曲线窗（1 秒采样，悬停回看对应时刻全部数据）、温度极值记录、历史日志、截图热键、数据接口 8080。
 
-- 下载：https://github.com/LinLVEO/pc-check/releases/latest/download/HardwareMonitor-v1.2.0-win-x64.zip
+- 下载：https://github.com/LinLVEO/pc-check/releases/latest/download/HardwareMonitor-v1.2.1-win-x64.zip
 - 源码：https://github.com/LinLVEO/hardware-monitor
