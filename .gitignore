@@ -14,3 +14,4 @@ config.json
 
 # 安装包（发布在 GitHub Release，不进仓库）
 PcCheck-*.zip
+HardwareMonitor-*.zip
